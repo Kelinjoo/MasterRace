@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+// Insert a new post into the database
 const createPost = (userId, title, description, imageUrl) => {
     return new Promise((resolve, reject) => {
         const sql = 'INSERT INTO posts (user_id, title, description, image_url) VALUES (?, ?, ?, ?)';
@@ -10,6 +11,7 @@ const createPost = (userId, title, description, imageUrl) => {
     });
 };
 
+// Retrieve all posts with the associated usernames
 const getAllPosts = () => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT posts.*, users.username FROM posts JOIN users ON posts.user_id = users.id ORDER BY posts.created_at DESC';
@@ -20,6 +22,7 @@ const getAllPosts = () => {
     });
 };
 
+// Retrieve a single post by ID
 const getPostById = (id) => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM posts WHERE id = ?';
@@ -30,6 +33,7 @@ const getPostById = (id) => {
     });
 };
 
+// Update a post if it belongs to the given user
 const updatePost = (id, userId, title, description, imageUrl) => {
     return new Promise((resolve, reject) => {
         const sql = 'UPDATE posts SET title = ?, description = ?, image_url = ? WHERE id = ? AND user_id = ?';
@@ -40,6 +44,7 @@ const updatePost = (id, userId, title, description, imageUrl) => {
     });
 };
 
+// Delete a post if it belongs to the given user
 const deletePost = (id, userId) => {
     return new Promise((resolve, reject) => {
         const sql = 'DELETE FROM posts WHERE id = ? AND user_id = ?';
