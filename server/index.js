@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const db = require('./config/db');
+const postRoutes = require('./routes/postRoutes');
+
 
 dotenv.config(); // ✅ Load .env before anything else
 
@@ -16,6 +18,8 @@ app.use(express.json());
 
 // ✅ Mount auth routes
 app.use('/api', authRoutes);
+app.use('/api/posts', postRoutes);
+
 
 // ✅ Test route
 app.get('/api/test', (req, res) => {
