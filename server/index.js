@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const db = require('./config/db'); // Just loading the DB connection
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const likeRoutes = require('./routes/likeRoutes');
+
 
 dotenv.config(); // Load environment variables
 
@@ -18,6 +20,8 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/likes', likeRoutes);
+
 
 // Test route
 app.get('/api/test', (req, res) => {
@@ -27,5 +31,5 @@ app.get('/api/test', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '127.0.0.1', () => {
-  console.log(`🚀 Server is running on http://127.0.0.1:${PORT}`);
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
