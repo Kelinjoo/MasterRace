@@ -9,7 +9,8 @@ const {
 // Create a new comment
 const create = async (req, res) => {
     const { postId, content } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user.id;
+
 
     if (!postId || !content) {
         return res.status(400).json({ error: 'Post ID and content are required.' });

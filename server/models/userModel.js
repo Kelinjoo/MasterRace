@@ -1,25 +1,18 @@
 const db = require('../config/db');
 
-// Insert a new user into the database
-const createUser = (username, email, hashedPassword) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
-        db.query(sql, [username, email, hashedPassword], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-        });
-    });
+// Insert a new user using async/await
+const createUser = async (username, email, hashedPassword) => {
+  const sql = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+  const [result] = await db.query(sql, [username, email, hashedPassword]);
+  return result;
 };
 
 // Retrieve a user by username
-const getUserByUsername = (username) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM users WHERE username = ?';
-        db.query(sql, [username], (err, results) => {
-            if (err) reject(err);
-            else resolve(results[0]);
-        });
-    });
+const getUserByUsername = async (username) => {
+  const sql = 'SELECT * FROM users WHERE username = ?';
+  const [rows] = await db.query(sql, [username]);
+  return rows[0]; // assuming username is unique
 };
 
 module.exports = { createUser, getUserByUsername };
+

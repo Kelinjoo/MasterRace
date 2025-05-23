@@ -10,7 +10,7 @@ console.log('Imported countLikes:', typeof countLikes);
 
 // Toggle like/unlike for a post
 const toggleLike = async (req, res) => {
-    const userId = req.user.userId;
+    const userId = req.user.id; 
     const { postId } = req.body;
 
     if (!postId) {

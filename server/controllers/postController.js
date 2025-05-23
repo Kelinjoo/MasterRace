@@ -9,7 +9,7 @@ const {
 // Create a new post (requires authentication)
 const create = async (req, res) => {
     const { title, description, imageUrl } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user.id; 
 
     try {
         await createPost(userId, title, description, imageUrl);

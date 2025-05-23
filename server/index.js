@@ -5,6 +5,8 @@ const db = require('./config/db'); // Just loading the DB connection
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const likeRoutes = require('./routes/likeRoutes');
+const partRoutes = require('./routes/partRoutes');
+const buildRoutes = require('./routes/buildRoutes'); 
 
 
 dotenv.config(); // Load environment variables
@@ -21,12 +23,29 @@ app.use('/api', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/likes', likeRoutes);
+app.use('/api/parts', partRoutes);
+app.use('/api/builds', buildRoutes); 
+
 
 
 // Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
+
+//test db
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const connection = await db.getConnection();
+    const [rows] = await connection.query('SELECT 1');
+    connection.release(); // VERY IMPORTANT
+    res.json({ db: 'connected', result: rows });
+  } catch (err) {
+    console.error('❌ DB test failed:', err);
+    res.status(500).json({ error: 'DB connection failed' });
+  }
+});
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
