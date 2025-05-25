@@ -1,16 +1,21 @@
-// routes/buildRoutes.js
 const express = require('express');
 const router = express.Router();
 const buildController = require('../controllers/buildController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// POST /api/builds - create new build (protected)
+// Create new build
 router.post('/', authMiddleware, buildController.createBuild);
 
-// GET /api/builds - get builds by current user (protected)
+// Get user's builds
 router.get('/', authMiddleware, buildController.getUserBuilds);
 
-// GET /api/builds/:buildId/parts - get all parts in a build (protected)
+// Get parts in a build
 router.get('/:buildId/parts', authMiddleware, buildController.getPartsForBuild);
+
+// Update a build
+router.put('/:id', authMiddleware, buildController.updateBuild);
+
+// Delete a build
+router.delete('/:id', authMiddleware, buildController.deleteBuild);
 
 module.exports = router;

@@ -1,58 +1,46 @@
 const db = require('../config/db');
 
-// Insert a new post into the database
-const createPost = (userId, title, description, imageUrl) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO posts (user_id, title, description, image_url) VALUES (?, ?, ?, ?)';
-        db.query(sql, [userId, title, description, imageUrl], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-        });
-    });
+// Insert a new post
+const createPost = async (userId, title, description, imageUrl) => {
+    const [result] = await db.query(
+        'INSERT INTO posts (user_id, title, description, image_url) VALUES (?, ?, ?, ?)',
+        [userId, title, description, imageUrl]
+    );
+    return result;
 };
 
-// Retrieve all posts with the associated usernames
-const getAllPosts = () => {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT posts.*, users.username FROM posts JOIN users ON posts.user_id = users.id ORDER BY posts.created_at DESC';
-        db.query(sql, (err, results) => {
-            if (err) reject(err);
-            else resolve(results);
-        });
-    });
+// Get all posts
+const getAllPosts = async () => {
+    const [results] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+    return results;
 };
 
-// Retrieve a single post by ID
-const getPostById = (id) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM posts WHERE id = ?';
-        db.query(sql, [id], (err, results) => {
-            if (err) reject(err);
-            else resolve(results[0]);
-        });
-    });
+// Get post by ID
+const getPostById = async (id) => {
+    const [results] = await db.query(
+        'SELECT * FROM posts WHERE id = ?',
+        [id]
+    );
+    return results[0];
 };
 
-// Update a post if it belongs to the given user
-const updatePost = (id, userId, title, description, imageUrl) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'UPDATE posts SET title = ?, description = ?, image_url = ? WHERE id = ? AND user_id = ?';
-        db.query(sql, [title, description, imageUrl, id, userId], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-        });
-    });
+// Update a post
+const updatePost = async (id, title, description, imageUrl) => {
+    const [result] = await db.query(
+        'UPDATE posts SET title = ?, description = ?, image_url = ? WHERE id = ?',
+        [title, description, imageUrl, id]
+    );
+    return result;
 };
 
-// Delete a post if it belongs to the given user
-const deletePost = (id, userId) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM posts WHERE id = ? AND user_id = ?';
-        db.query(sql, [id, userId], (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-        });
-    });
+
+// Delete a post
+const deletePost = async (id) => {
+    const [result] = await db.query(
+        'DELETE FROM posts WHERE id = ?',
+        [id]
+    );
+    return result;
 };
 
 module.exports = {

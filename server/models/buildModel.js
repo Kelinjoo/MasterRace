@@ -1,8 +1,6 @@
-// models/buildModel.js
-const db = require('../config/db'); 
+const db = require('../config/db');
 
-
-// Create a new build and return the new build's ID
+// Create a new build
 const createBuild = async (userId, name) => {
   const [result] = await db.query(
     'INSERT INTO builds (user_id, name) VALUES (?, ?)',
@@ -11,7 +9,7 @@ const createBuild = async (userId, name) => {
   return result.insertId;
 };
 
-// Link a part to a build
+// Add part to build
 const addPartToBuild = async (buildId, partId) => {
   await db.query(
     'INSERT INTO build_parts (build_id, part_id) VALUES (?, ?)',
@@ -19,7 +17,7 @@ const addPartToBuild = async (buildId, partId) => {
   );
 };
 
-// Get all builds by a specific user
+// Get builds by user
 const getBuildsByUser = async (userId) => {
   const [rows] = await db.query(
     'SELECT * FROM builds WHERE user_id = ?',
@@ -28,7 +26,7 @@ const getBuildsByUser = async (userId) => {
   return rows;
 };
 
-// Get all parts for a specific build
+// Get parts in a build
 const getPartsForBuild = async (buildId) => {
   const [rows] = await db.query(
     `SELECT p.* FROM parts p
@@ -39,9 +37,40 @@ const getPartsForBuild = async (buildId) => {
   return rows;
 };
 
+// Update build name
+const updateBuild = async (buildId, userId, name) => {
+  const [result] = await db.query(
+    'UPDATE builds SET name = ? WHERE id = ? AND user_id = ?',
+    [name, buildId, userId]
+  );
+  return result;
+};
+
+// Clear all parts from build
+const clearPartsFromBuild = async (buildId) => {
+  const [result] = await db.query(
+    'DELETE FROM build_parts WHERE build_id = ?',
+    [buildId]
+  );
+  return result;
+};
+
+// Delete build
+const deleteBuild = async (buildId, userId) => {
+  const [result] = await db.query(
+    'DELETE FROM builds WHERE id = ? AND user_id = ?',
+    [buildId, userId]
+  );
+  return result;
+};
+
 module.exports = {
   createBuild,
   addPartToBuild,
   getBuildsByUser,
   getPartsForBuild,
+  updateBuild,
+  clearPartsFromBuild,
+  deleteBuild
 };
+

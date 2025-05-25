@@ -37,7 +37,7 @@ const getForPost = async (req, res) => {
 // Update own comment
 const update = async (req, res) => {
     const commentId = req.params.id;
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const { content } = req.body;
 
     try {
@@ -49,7 +49,7 @@ const update = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to update this comment' });
         }
 
-        await updateComment(commentId, userId, content);
+        await updateComment(commentId, content);
         res.json({ message: 'Comment updated successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -59,7 +59,7 @@ const update = async (req, res) => {
 // Delete comment (owner or admin only)
 const remove = async (req, res) => {
     const commentId = req.params.id;
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const isAdmin = req.user.isAdmin;
 
     try {

@@ -5,7 +5,6 @@ const {
     countLikes
 } = require('../models/likeModel');
 
-console.log('Imported countLikes:', typeof countLikes);
 
 
 // Toggle like/unlike for a post
