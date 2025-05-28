@@ -5,7 +5,10 @@ import PostForm from '../components/PostForm';
 import '../styles/HomePage.css';
 
 function HomePage() {
-  const { auth } = useAuth();
+  const { auth, isLoaded } = useAuth(); // Destructure isLoaded
+
+  // Wait for auth to be loaded before rendering anything
+  if (!isLoaded) return null;
 
   // Controls whether the form is visible
   const [showForm, setShowForm] = useState(false);

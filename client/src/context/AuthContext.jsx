@@ -1,14 +1,33 @@
 // Global auth context for managing login state and user info
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState({
-    token: localStorage.getItem('token') || '',   // Retrieve token from localStorage if present
+    token: '',
     isAdmin: false,
     userId: null,
   });
+
+  const [isLoaded, setIsLoaded] = useState(false); // Helps prevent layout jump
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setAuth({
+          token,
+          userId: payload.userId,
+          isAdmin: payload.isAdmin,
+        });
+      } catch (err) {
+        console.error('Invalid token');
+      }
+    }
+    setIsLoaded(true);
+  }, []);
 
   // Store token and user info on login
   const login = (token, userId, isAdmin) => {
@@ -23,7 +42,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, login, logout, isLoaded }}>
       {children}
     </AuthContext.Provider>
   );
