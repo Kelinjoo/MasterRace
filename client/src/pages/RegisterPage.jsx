@@ -1,46 +1,54 @@
-// Registration form that submits new user data to /api/register
+// Import the PostList component (renders all posts)
+import PostList from '../components/PostList';
+import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from '../api/axios';
-import '../styles/RegisterPage.css';
+import PostForm from '../components/PostForm';
+import '../styles/HomePage.css';
 
-
-function RegisterPage() {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('/register', formData);
-      navigate('/login'); // Redirect to login after successful registration
-    } catch (err) {
-      setError('Registration failed');
-    }
-  };
+function HomePage() {
+  const { auth } = useAuth();            // Get user auth info (token, userId, isAdmin)
+  const [showForm, setShowForm] = useState(false); // Track whether to show the post form
 
   return (
-    <div className="login-container">
-      <h2 className="mb-4">Register</h2>
-      <form onSubmit={handleRegister}>
-        <div className="mb-3">
-          <label className="form-label">Username</label>
-          <input className="form-control" required onChange={e => setFormData({ ...formData, username: e.target.value })} />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Email</label>
-          <input type="email" className="form-control" required onChange={e => setFormData({ ...formData, email: e.target.value })} />
-        </div>
-        <div className="mb-3">
-          <label className="form-label">Password</label>
-          <input type="password" className="form-control" required onChange={e => setFormData({ ...formData, password: e.target.value })} />
-        </div>
-        {error && <div className="text-danger">{error}</div>}
-        <button type="submit" className="btn btn-success w-100">Register</button>
-      </form>
+    <div className="container">
+      
+      {/* Header section with greeting and user info */}
+      <div className="home-header">
+        <h1>Welcome to MasterRace</h1>
+        {auth.token && (
+          <p className="user-info">
+            Logged in as <strong>User ID: {auth.userId}</strong>{' '}
+            {auth.isAdmin && '(Admin)'}
+          </p>
+        )}
+      </div>
+
+      {/* Toggle button to show/hide the post creation form */}
+      {auth.token && (
+        <>
+          <div className="create-post-toggle">
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => setShowForm(prev => !prev)}
+            >
+              {showForm ? 'Hide Form' : '+ Create New Post'}
+            </button>
+          </div>
+
+          {/* Conditionally render the post form */}
+          {showForm && (
+            <div className="create-post-box">
+              {/* PostForm takes onSuccess which hides the form after submission */}
+              <PostForm onSuccess={() => setShowForm(false)} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Display all posts below the form */}
+      <PostList />
     </div>
   );
 }
 
-export default RegisterPage;
+export default HomePage;
