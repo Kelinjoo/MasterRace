@@ -33,7 +33,7 @@ const login = async (req, res) => {
 
 
         // Include isAdmin flag in the token payload
-        const token = jwt.sign({ userId: user.id, isAdmin: user.is_admin }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id, isAdmin: user.is_admin, username: user.username, bio: user.bio, profile_picture: user.profile_picture }, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (err) {
         res.status(500).json({ error: err.message });

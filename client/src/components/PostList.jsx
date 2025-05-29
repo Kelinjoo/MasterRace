@@ -45,35 +45,51 @@ function PostList({ setEditingPost, setShowForm }) {
   return (
     <div className="post-list-vertical">
       {error && <div className="alert alert-danger">{error}</div>}
-
+  
       {posts.map((post) => (
         <div className="post-card position-relative" key={post.id}>
-          {/* Image with click-to-preview modal */}
-          {post.image_url && (
-            <img
-              src={post.image_url}
-              className="card-img-top"
-              alt="post"
-              onClick={() => setPreviewImage(post.image_url)}
-              style={{ cursor: 'pointer' }}
-            />
-          )}
-
-          {/* Dropdown menu for authorized users */}
-          {(auth.token && (auth.userId === post.user_id || auth.isAdmin)) ? (
-            <>
-              {activeDropdown === post.id && (
-                <div className="dropdown post-menu">
-                  <button
-                    className="btn btn-sm dropdown-toggle"
-                    type="button"
-                    onClick={() =>
-                      setActiveDropdown(prev => (prev === post.id ? null : post.id))
-                    }
+          
+          {/* Image container that includes image + dropdown */}
+          <div className="image-container position-relative">
+            {/* Image always rendered first */}
+            {post.image_url && (
+              <img
+                src={post.image_url}
+                className="card-img-top"
+                alt="post"
+                onClick={() => setPreviewImage(post.image_url)}
+                style={{ cursor: 'pointer' }}
+              />
+            )}
+  
+            {/* Dropdown menu absolutely positioned after image */}
+            {(auth.token && (auth.userId === post.user_id || auth.isAdmin)) ? (
+              <div className="post-menu">
+                <button
+                  className="btn btn-sm dropdown-toggle"
+                  type="button"
+                  style={{
+                    border: '1px solid white',
+                    color: 'white',
+                    backgroundColor: 'black',
+                    borderRadius: '10px',
+                    padding: '4px 8px',
+                    fontSize: '1.3rem',
+                    lineHeight: '1'
+                  }}
+                  onClick={() =>
+                    setActiveDropdown(prev => (prev === post.id ? null : post.id))
+                  }
+                >
+                  ⋮
+                </button>
+  
+                {/* Conditionally render dropdown menu without causing layout shift */}
+                {activeDropdown === post.id ? (
+                  <div
+                    className="dropdown-menu show"
+                    style={{ position: 'absolute', top: '38px', left: '0' }}
                   >
-                    ⋮
-                  </button>
-                  <div className="dropdown-menu show">
                     <button
                       className="dropdown-item"
                       onClick={() => {
@@ -93,11 +109,11 @@ function PostList({ setEditingPost, setShowForm }) {
                       Delete
                     </button>
                   </div>
-                </div>
-              )}
-            </>
-          ) : null}
-
+                ) : null}
+              </div>
+            ) : null} {/* This explicit null fixes the "0" bug */}
+          </div>
+  
           <div className="card-body">
             {/* Display content or inline edit form */}
             {editingPostId === post.id ? (
@@ -118,7 +134,7 @@ function PostList({ setEditingPost, setShowForm }) {
           </div>
         </div>
       ))}
-
+  
       {/* Image preview modal */}
       {previewImage && (
         <div className="image-modal" onClick={() => setPreviewImage(null)}>
@@ -127,6 +143,7 @@ function PostList({ setEditingPost, setShowForm }) {
       )}
     </div>
   );
+  
 }
 
 export default PostList;

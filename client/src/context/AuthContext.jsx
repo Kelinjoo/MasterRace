@@ -6,11 +6,14 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState({
     token: '',
-    isAdmin: false,
     userId: null,
+    username: '',
+    isAdmin: false,
+    bio: '',
+    profile_picture: ''
   });
 
-  const [isLoaded, setIsLoaded] = useState(false); // Helps prevent layout jump
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -21,6 +24,9 @@ export function AuthProvider({ children }) {
           token,
           userId: payload.userId,
           isAdmin: payload.isAdmin,
+          username: payload.username,
+          bio: payload.bio || '',
+          profile_picture: payload.profile_picture || ''
         });
       } catch (err) {
         console.error('Invalid token');
@@ -29,23 +35,23 @@ export function AuthProvider({ children }) {
     setIsLoaded(true);
   }, []);
 
-  // Store token and user info on login
-  const login = (token, userId, isAdmin) => {
+  // Store all user info on login
+  const login = (token, userId, isAdmin, username, bio = '', profile_picture = '') => {
     localStorage.setItem('token', token);
-    setAuth({ token, userId, isAdmin });
+    setAuth({ token, userId, isAdmin, username, bio, profile_picture });
   };
 
-  // Clear token and reset state on logout
   const logout = () => {
     localStorage.removeItem('token');
-    setAuth({ token: '', userId: null, isAdmin: false });
+    setAuth({ token: '', userId: null, isAdmin: false, username: '', bio: '', profile_picture: '' });
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout, isLoaded }}>
+    <AuthContext.Provider value={{ auth, setAuth, login, logout, isLoaded }}>
       {children}
     </AuthContext.Provider>
   );
 }
+
 
 export const useAuth = () => useContext(AuthContext);

@@ -7,6 +7,8 @@ const commentRoutes = require('./routes/commentRoutes');
 const likeRoutes = require('./routes/likeRoutes');
 const partRoutes = require('./routes/partRoutes');
 const buildRoutes = require('./routes/buildRoutes'); 
+const userRoutes = require('./routes/userRoutes');
+
 
 
 dotenv.config(); // Load environment variables
@@ -25,6 +27,9 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/parts', partRoutes);
 app.use('/api/builds', buildRoutes); 
+app.use('/api/users', userRoutes);
+
+
 
 
 

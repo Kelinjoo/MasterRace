@@ -50,9 +50,19 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <h4>{editingPost ? 'Edit Post' : 'Create New Post'}</h4>
-
+    <form
+      onSubmit={handleSubmit}
+      className="mb-4"
+      style={{
+        maxWidth: '500px',
+        width: '100%',
+        margin: '10px auto'
+      }}
+    >
+      <h4 style={{ textAlign: 'center'}}>
+        {editingPost ? 'Edit Post' : 'Create New Post'}
+      </h4>
+  
       {/* Title Input */}
       <div className="mb-3">
         <input
@@ -64,7 +74,7 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
           required
         />
       </div>
-
+  
       {/* Description Textarea */}
       <div className="mb-3">
         <textarea
@@ -75,7 +85,7 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
           required
         />
       </div>
-
+  
       {/* Image URL Input */}
       <div className="mb-3">
         <input
@@ -86,10 +96,10 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
           onChange={e => setImageUrl(e.target.value)}
         />
       </div>
-
+  
       {/* Error display */}
       {error && <div className="text-danger">{error}</div>}
-
+  
       {/* Action buttons */}
       <button className="btn btn-success me-2" type="submit">
         {editingPost ? 'Update' : 'Create'}
@@ -101,6 +111,7 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
       )}
     </form>
   );
+  
 }
 
 export default PostForm;
