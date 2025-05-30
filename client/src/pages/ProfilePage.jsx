@@ -138,7 +138,7 @@ function ProfilePage() {
         <div className="profile-info">
           <h2>{auth.username || 'User'}</h2>
           {auth.bio && <p className="profile-bio">{auth.bio}</p>}
-          {auth.isAdmin && <span className="admin-badge">Admin</span>}
+          {auth.isAdmin === true && <span className="admin-badge">Admin</span>}
 
           <div className="edit-buttons">
             <button onClick={() => handleProfileEdit("profilePic")} className="btn btn-outline-secondary btn-sm">Edit Profile Pic</button>

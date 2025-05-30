@@ -23,8 +23,8 @@ function HomePage() {
         <h1>Welcome to MasterRace</h1>
         {auth.token && (
           <p className="user-info">
-            Logged in as <strong>User ID: {auth.userId}</strong>{' '}
-            {auth.isAdmin && '(Admin)'}
+            Logged in as <strong>{auth.username}</strong>{' '}
+            {auth.isAdmin === true && <span className="admin-badge">Admin</span>}
           </p>
         )}
       </div>

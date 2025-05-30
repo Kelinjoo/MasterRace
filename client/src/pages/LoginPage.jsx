@@ -20,7 +20,7 @@ function LoginPage() {
 
       // Decode payload from JWT token (base64 decode)
       const payload = JSON.parse(atob(token.split('.')[1]));
-      login(token, payload.userId, payload.isAdmin, payload.username); // Save to context
+      login(token, payload.userId, payload.isAdmin, payload.username, payload.bio, payload.profile_picture); // Save to context
       navigate('/');
     } catch (err) {
       setError('Invalid credentials');

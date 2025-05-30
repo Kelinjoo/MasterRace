@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
         setAuth({
           token,
           userId: payload.userId,
-          isAdmin: payload.isAdmin,
+          isAdmin: Boolean(payload.isAdmin),
           username: payload.username,
           bio: payload.bio || '',
           profile_picture: payload.profile_picture || ''
@@ -51,6 +51,8 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
+
+
 }
 
 

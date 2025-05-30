@@ -1,28 +1,75 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import PostForm from './PostForm'; // Used for inline edit form
+import PostForm from './PostForm';
 
 function PostList({ setEditingPost, setShowForm }) {
   const { auth } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [likesByPostId, setLikesByPostId] = useState({});
+  const [likedPosts, setLikedPosts] = useState({});
   const [error, setError] = useState('');
-  const [activeDropdown, setActiveDropdown] = useState(null); // Tracks open dropdown
-  const [editingPostId, setEditingPostId] = useState(null);   // Tracks post being edited
-  const [previewImage, setPreviewImage] = useState(null);     // For image modal
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
-  // Fetch posts from backend
   const fetchPosts = async () => {
     try {
       const res = await axios.get('/posts');
       setPosts(res.data);
+      await fetchLikeCounts(res.data);
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError('Failed to load posts');
     }
   };
 
-  // Handle delete
+  const fetchLikeCounts = async (posts) => {
+    try {
+      const likePromises = posts.map(post =>
+        axios.get(`/likes/${post.id}`)
+      );
+      const results = await Promise.all(likePromises);
+      const newLikeMap = {};
+      const newLikedMap = {};
+      posts.forEach((post, i) => {
+        const count = results[i].data.totalLikes;
+        newLikeMap[post.id] = count;
+        // For now, simulate that the user already liked posts they interact with
+        if (count > 0) {
+          newLikedMap[post.id] = true;
+        }
+      });
+      setLikesByPostId(newLikeMap);
+      setLikedPosts(prev => ({ ...prev, ...newLikedMap }));
+    } catch (err) {
+      console.error('Failed to fetch like counts');
+    }
+  };
+
+  const handleLikeToggle = async (postId) => {
+    try {
+      await axios.post('/likes', { postId }, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        }
+      });
+
+      const res = await axios.get(`/likes/${postId}`);
+      setLikesByPostId(prev => ({
+        ...prev,
+        [postId]: res.data.totalLikes
+      }));
+
+      setLikedPosts(prev => ({
+        ...prev,
+        [postId]: !prev[postId]
+      }));
+    } catch (err) {
+      alert('Failed to toggle like');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
@@ -45,13 +92,11 @@ function PostList({ setEditingPost, setShowForm }) {
   return (
     <div className="post-list-vertical">
       {error && <div className="alert alert-danger">{error}</div>}
-  
+
       {posts.map((post) => (
         <div className="post-card position-relative" key={post.id}>
-          
-          {/* Image container that includes image + dropdown */}
+
           <div className="image-container position-relative">
-            {/* Image always rendered first */}
             {post.image_url && (
               <img
                 src={post.image_url}
@@ -61,8 +106,7 @@ function PostList({ setEditingPost, setShowForm }) {
                 style={{ cursor: 'pointer' }}
               />
             )}
-  
-            {/* Dropdown menu absolutely positioned after image */}
+
             {(auth.token && (auth.userId === post.user_id || auth.isAdmin)) ? (
               <div className="post-menu">
                 <button
@@ -83,8 +127,7 @@ function PostList({ setEditingPost, setShowForm }) {
                 >
                   ⋮
                 </button>
-  
-                {/* Conditionally render dropdown menu without causing layout shift */}
+
                 {activeDropdown === post.id ? (
                   <div
                     className="dropdown-menu show"
@@ -111,11 +154,10 @@ function PostList({ setEditingPost, setShowForm }) {
                   </div>
                 ) : null}
               </div>
-            ) : null} {/* This explicit null fixes the "0" bug */}
+            ) : null}
           </div>
-  
+
           <div className="card-body">
-            {/* Display content or inline edit form */}
             {editingPostId === post.id ? (
               <PostForm
                 editingPost={post}
@@ -126,16 +168,30 @@ function PostList({ setEditingPost, setShowForm }) {
                 onCancel={() => setEditingPostId(null)}
               />
             ) : (
-              <div className="post-content">
-                <h5 className="card-title">{post.title}</h5>
-                <p className="card-text">{post.description}</p>
-              </div>
+              <>
+                <div className="post-content">
+                  <h5 className="card-title">{post.title}</h5>
+                  <p className="card-text">{post.description}</p>
+                </div>
+
+                {/* Like row moved outside of .post-content */}
+                <div className="like-container">
+                  <button
+                    className={`btn btn-sm like-button ${likedPosts[post.id] ? 'liked' : 'unliked'}`}
+                    onClick={() => handleLikeToggle(post.id)}
+                    disabled={!auth.token}
+                  >
+                    ❤️
+                  </button>
+                  <span className="like-count">{likesByPostId[post.id] || 0}</span>
+                </div>
+
+              </>
             )}
           </div>
         </div>
       ))}
-  
-      {/* Image preview modal */}
+
       {previewImage && (
         <div className="image-modal" onClick={() => setPreviewImage(null)}>
           <img src={previewImage} alt="Full view" />
@@ -143,7 +199,6 @@ function PostList({ setEditingPost, setShowForm }) {
       )}
     </div>
   );
-  
 }
 
 export default PostList;
