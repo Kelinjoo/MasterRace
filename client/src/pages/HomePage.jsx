@@ -35,7 +35,7 @@ function HomePage() {
           {/* Button to toggle visibility of the post form */}
           <div className="create-post-toggle">
             <button
-              className="btn btn-outline-primary"
+              className="btn btn-outline-secondary"
               onClick={() => {
                 setEditingPost(null);       // Reset edit state if creating
                 setShowForm(prev => !prev); // Toggle visibility

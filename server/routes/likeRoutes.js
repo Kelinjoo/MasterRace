@@ -3,10 +3,15 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const likeController = require('../controllers/likeController');
 
-// POST to like or unlike a post (toggle logic)
+// Like/unlike toggle
 router.post('/', auth, likeController.toggleLike);
 
-// GET total like count for a post
+// Get which posts this user liked
+router.get('/user-liked', auth, likeController.getUserLikedPosts);
+
+// Total like count for post
 router.get('/:postId', likeController.getLikeCount);
+
+
 
 module.exports = router;

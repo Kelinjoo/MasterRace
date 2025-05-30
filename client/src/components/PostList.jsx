@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import PostForm from './PostForm';
+import CommentSection from './CommentSection';
 
 function PostList({ setEditingPost, setShowForm }) {
   const { auth } = useAuth();
@@ -12,7 +13,9 @@ function PostList({ setEditingPost, setShowForm }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [activeCommentInput, setActiveCommentInput] = useState(null);
 
+  // Fetch all posts
   const fetchPosts = async () => {
     try {
       const res = await axios.get('/posts');
@@ -24,6 +27,7 @@ function PostList({ setEditingPost, setShowForm }) {
     }
   };
 
+  // Fetch total likes per post
   const fetchLikeCounts = async (posts) => {
     try {
       const likePromises = posts.map(post =>
@@ -31,55 +35,76 @@ function PostList({ setEditingPost, setShowForm }) {
       );
       const results = await Promise.all(likePromises);
       const newLikeMap = {};
-      const newLikedMap = {};
       posts.forEach((post, i) => {
-        const count = results[i].data.totalLikes;
-        newLikeMap[post.id] = count;
-        // For now, simulate that the user already liked posts they interact with
-        if (count > 0) {
-          newLikedMap[post.id] = true;
-        }
+        newLikeMap[post.id] = results[i].data.totalLikes;
       });
       setLikesByPostId(newLikeMap);
-      setLikedPosts(prev => ({ ...prev, ...newLikedMap }));
     } catch (err) {
       console.error('Failed to fetch like counts');
     }
   };
 
+  // Fetch which posts the current user has liked
+  const fetchUserLikedPosts = async () => {
+    try {
+      const res = await axios.get('/likes/user-liked', {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      const likedMap = {};
+      res.data.forEach(postId => {
+        likedMap[Number(postId)] = true; 
+      });
+      setLikedPosts(likedMap);
+
+    } catch (err) {
+      console.error('Failed to fetch user liked posts');
+    }
+  };
+  
   const handleLikeToggle = async (postId) => {
+    // Flip UI state optimistically
+    setLikedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  
     try {
       await axios.post('/likes', { postId }, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`
-        }
+        headers: { Authorization: `Bearer ${auth.token}` }
       });
-
+    } catch (err) {
+      // Rollback like if toggle failed
+      setLikedPosts(prev => ({
+        ...prev,
+        [postId]: !prev[postId] // reverse again
+      }));
+      alert('Failed to toggle like');
+      return;
+    }
+  
+    // Refresh like count only (not likedPosts again)
+    try {
       const res = await axios.get(`/likes/${postId}`);
       setLikesByPostId(prev => ({
         ...prev,
         [postId]: res.data.totalLikes
       }));
-
-      setLikedPosts(prev => ({
-        ...prev,
-        [postId]: !prev[postId]
-      }));
     } catch (err) {
-      alert('Failed to toggle like');
+      console.warn('Failed to refresh like count');
     }
   };
+  
+  
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
       await axios.delete(`/posts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
+        headers: { Authorization: `Bearer ${auth.token}` }
       });
       fetchPosts();
+      fetchUserLikedPosts();
     } catch (err) {
       alert('Delete failed');
     }
@@ -87,6 +112,9 @@ function PostList({ setEditingPost, setShowForm }) {
 
   useEffect(() => {
     fetchPosts();
+    if (auth.token) {
+      fetchUserLikedPosts();
+    }
   }, []);
 
   return (
@@ -115,7 +143,7 @@ function PostList({ setEditingPost, setShowForm }) {
                   style={{
                     border: '1px solid white',
                     color: 'white',
-                    backgroundColor: 'black',
+                    backgroundColor: '#6C757D',
                     borderRadius: '10px',
                     padding: '4px 8px',
                     fontSize: '1.3rem',
@@ -125,7 +153,6 @@ function PostList({ setEditingPost, setShowForm }) {
                     setActiveDropdown(prev => (prev === post.id ? null : post.id))
                   }
                 >
-                  ⋮
                 </button>
 
                 {activeDropdown === post.id ? (
@@ -164,31 +191,44 @@ function PostList({ setEditingPost, setShowForm }) {
                 onSuccess={() => {
                   setEditingPostId(null);
                   fetchPosts();
+                  fetchUserLikedPosts();
                 }}
                 onCancel={() => setEditingPostId(null)}
               />
             ) : (
-              <>
-                <div className="post-content">
-                  <h5 className="card-title">{post.title}</h5>
-                  <p className="card-text">{post.description}</p>
-                </div>
-
-                {/* Like row moved outside of .post-content */}
-                <div className="like-container">
-                  <button
-                    className={`btn btn-sm like-button ${likedPosts[post.id] ? 'liked' : 'unliked'}`}
-                    onClick={() => handleLikeToggle(post.id)}
-                    disabled={!auth.token}
-                  >
-                    ❤️
-                  </button>
-                  <span className="like-count">{likesByPostId[post.id] || 0}</span>
-                </div>
-
-              </>
+              <div className="post-content">
+                <h5 className="card-title">{post.title}</h5>
+                <p className="card-text">{post.description}</p>
+              </div>
             )}
+
+            <div className="post-actions">
+              <div className="like-comment-row">
+                <button
+                  className={`btn btn-sm like-button ${likedPosts[post.id] ? 'liked' : 'unliked'}`}
+                  onClick={() => handleLikeToggle(post.id)}
+                  disabled={!auth.token}
+                >
+                  ❤️
+                </button>
+                <span className="like-count">{likesByPostId[post.id] || 0}</span>
+
+                <button
+                  className="btn btn-sm comment-button"
+                  onClick={() =>
+                    setActiveCommentInput(prev => prev === post.id ? null : post.id)
+                  }
+                >
+                  💬 Comments
+                </button>
+              </div>
+            </div>
           </div>
+
+          <CommentSection
+            postId={post.id}
+            showInput={activeCommentInput === post.id}
+          />
         </div>
       ))}
 

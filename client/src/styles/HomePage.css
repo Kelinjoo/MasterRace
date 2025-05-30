@@ -51,10 +51,10 @@
   }
 
   .card-body {
-    padding: 0 20px 20px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    
   }
 
   .card-footer {
@@ -117,15 +117,22 @@
   }
 
 /* Container for like row */
-.like-container {
-  position: absolute;
-  /* Position where you want it */
-  bottom: 10px;
-  left: 15px;
-
+.post-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  justify-content: flex-start !important;
+  width: 100%;
+  padding-left: 10px;
+}
+
+
+.like-comment-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Button styles stay the same */
