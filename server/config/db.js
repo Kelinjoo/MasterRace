@@ -10,8 +10,20 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'MRace',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
 });
+
+// Test the database connection immediately
+(async () => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('✅ Connected to MySQL');
+    connection.release();
+  } catch (error) {
+    console.error('❌ Failed to connect to MySQL:', error.message);
+    process.exit(1); // stop app if DB is unreachable
+  }
+})();
 
 module.exports = pool;
 
