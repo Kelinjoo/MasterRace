@@ -11,7 +11,7 @@ const {
   changePassword
 } = require('../controllers/userController');
 
-// Auth-protected routes for managing user account info
+/// Auth-protected routes for managing user account info
 router.get('/me', auth, getUserInfo);
 router.put('/username', auth, changeUsername);
 router.put('/bio', auth, changeBio);

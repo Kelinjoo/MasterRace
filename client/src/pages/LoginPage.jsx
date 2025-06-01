@@ -15,6 +15,7 @@ function LoginPage() {
   // Handle login form submit
   const handleLogin = async (e) => {
     e.preventDefault();
+    
     try {
       const res = await axios.post('/login', { username, password });
       const token = res.data.token;
