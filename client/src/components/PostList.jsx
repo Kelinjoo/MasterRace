@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import PostForm from './PostForm';
 import CommentSection from './CommentSection';
 
-function PostList({ setEditingPost, setShowForm }) {
+function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
   const { auth } = useAuth();
   const [posts, setPosts] = useState([]);
   const [likesByPostId, setLikesByPostId] = useState({});
@@ -14,6 +14,7 @@ function PostList({ setEditingPost, setShowForm }) {
   const [editingPostId, setEditingPostId] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [activeCommentInput, setActiveCommentInput] = useState(null);
+  
 
   // Fetch all posts
   const fetchPosts = async () => {
@@ -115,7 +116,7 @@ function PostList({ setEditingPost, setShowForm }) {
     if (auth.token) {
       fetchUserLikedPosts();
     }
-  }, []);
+  }, [refreshPostsTrigger]);
 
   return (
     <div className="post-list-vertical">
@@ -189,12 +190,18 @@ function PostList({ setEditingPost, setShowForm }) {
               <PostForm
                 editingPost={post}
                 onSuccess={() => {
-                  setEditingPostId(null);
-                  fetchPosts();
-                  fetchUserLikedPosts();
+                  setEditingPost(null);
+                  setShowForm(false);
+                  setEditingPostId(null); // ✅ needed to exit edit mode
+                  fetchPosts();       
                 }}
-                onCancel={() => setEditingPostId(null)}
+                onCancel={() => {
+                  setEditingPost(null);
+                  setShowForm(false);
+                  setEditingPostId(null);
+                }}
               />
+
             ) : (
               <div className="post-content">
                 <h5 className="card-title">{post.title}</h5>

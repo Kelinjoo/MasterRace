@@ -7,8 +7,12 @@ import '../styles/HomePage.css';
 function HomePage() {
   const { auth, isLoaded } = useAuth(); // Destructure isLoaded
 
+
   // Wait for auth to be loaded before rendering anything
   if (!isLoaded) return null;
+
+  // refresh trigger
+  const [refreshPostsTrigger, setRefreshPostsTrigger] = useState(0);
 
   // Controls whether the form is visible
   const [showForm, setShowForm] = useState(false);
@@ -53,10 +57,12 @@ function HomePage() {
                 onSuccess={() => {
                   setEditingPost(null);
                   setShowForm(false);
+                  setRefreshPostsTrigger(prev => prev + 1); 
                 }}
                 onCancel={() => {
                   setEditingPost(null);
                   setShowForm(false);
+                  setEditingPostId(null); // ✅ Needed to exit edit mode
                 }}
               />
             </div>
@@ -65,7 +71,7 @@ function HomePage() {
       )}
 
       {/* Display all posts, pass down edit handlers */}
-      <PostList setEditingPost={setEditingPost} setShowForm={setShowForm} />
+      <PostList setEditingPost={setEditingPost} setShowForm={setShowForm} refreshPostsTrigger={refreshPostsTrigger}/>
     </div>
   );
 }

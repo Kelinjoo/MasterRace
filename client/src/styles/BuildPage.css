@@ -1,0 +1,23 @@
+.user-builds-container {
+    max-width: 700px;
+    margin: auto;
+  }
+  
+  .user-build-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .user-build-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+  }
+  
+  .edit-build-form input,
+  .edit-build-form select {
+    width: 100%;
+  }
+  

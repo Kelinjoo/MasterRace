@@ -45,6 +45,7 @@ function PostForm({ onSuccess, editingPost = null, onCancel }) {
       setImageUrl('');
       if (onCancel) onCancel(); // Exit edit mode if applicable
     } catch (err) {
+      console.error('Failed to save post:', err.response?.data || err.message);
       setError('Failed to save post');
     }
   };
