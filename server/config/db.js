@@ -14,7 +14,7 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-// Test the database connection immediately
+/// Test the database connection immediately
 (async () => {
   try {
     const connection = await pool.getConnection();
