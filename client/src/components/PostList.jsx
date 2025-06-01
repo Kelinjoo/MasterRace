@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import PostForm from './PostForm';
 import CommentSection from './CommentSection';
 
-function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
+function PostList({ setEditingPost, setShowForm, refreshPostsTrigger }) {
   const { auth } = useAuth();
   const [posts, setPosts] = useState([]);
   const [likesByPostId, setLikesByPostId] = useState({});
@@ -14,38 +14,37 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
   const [editingPostId, setEditingPostId] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [activeCommentInput, setActiveCommentInput] = useState(null);
-  
 
   // Fetch all posts
   const fetchPosts = async () => {
     try {
       const res = await axios.get('/posts');
       setPosts(res.data);
-      await fetchLikeCounts(res.data);
+      await fetchLikeCounts(res.data); // Fetch likes in parallel
     } catch (err) {
-      console.error('Error fetching posts:', err);
       setError('Failed to load posts');
     }
   };
 
-  // Fetch total likes per post
+  // Get total like counts for all posts
   const fetchLikeCounts = async (posts) => {
     try {
       const likePromises = posts.map(post =>
         axios.get(`/likes/${post.id}`)
       );
       const results = await Promise.all(likePromises);
+
       const newLikeMap = {};
       posts.forEach((post, i) => {
         newLikeMap[post.id] = results[i].data.totalLikes;
       });
       setLikesByPostId(newLikeMap);
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch like counts');
     }
   };
 
-  // Fetch which posts the current user has liked
+  // Find which posts the current user liked
   const fetchUserLikedPosts = async () => {
     try {
       const res = await axios.get('/likes/user-liked', {
@@ -53,50 +52,46 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
       });
       const likedMap = {};
       res.data.forEach(postId => {
-        likedMap[Number(postId)] = true; 
+        likedMap[Number(postId)] = true;
       });
       setLikedPosts(likedMap);
-
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch user liked posts');
     }
   };
-  
+
+  // Like/unlike toggle
   const handleLikeToggle = async (postId) => {
-    // Flip UI state optimistically
     setLikedPosts(prev => ({
       ...prev,
       [postId]: !prev[postId]
     }));
-  
+
     try {
       await axios.post('/likes', { postId }, {
         headers: { Authorization: `Bearer ${auth.token}` }
       });
-    } catch (err) {
-      // Rollback like if toggle failed
+    } catch {
+      // Rollback on failure
       setLikedPosts(prev => ({
         ...prev,
-        [postId]: !prev[postId] // reverse again
+        [postId]: !prev[postId]
       }));
       alert('Failed to toggle like');
-      return;
     }
-  
-    // Refresh like count only (not likedPosts again)
+
     try {
       const res = await axios.get(`/likes/${postId}`);
       setLikesByPostId(prev => ({
         ...prev,
         [postId]: res.data.totalLikes
       }));
-    } catch (err) {
+    } catch {
       console.warn('Failed to refresh like count');
     }
   };
-  
-  
 
+  // Delete post
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
@@ -106,11 +101,12 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
       });
       fetchPosts();
       fetchUserLikedPosts();
-    } catch (err) {
+    } catch {
       alert('Delete failed');
     }
   };
 
+  // Fetch posts and liked posts on load or when refresh trigger changes
   useEffect(() => {
     fetchPosts();
     if (auth.token) {
@@ -124,7 +120,7 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
 
       {posts.map((post) => (
         <div className="post-card position-relative" key={post.id}>
-
+          {/* Image preview section */}
           <div className="image-container position-relative">
             {post.image_url && (
               <img
@@ -136,31 +132,19 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
               />
             )}
 
-            {(auth.token && (auth.userId === post.user_id || auth.isAdmin)) ? (
+            {/* Three-dot menu for owner or admin */}
+            {(auth.token && (auth.userId === post.user_id || auth.isAdmin)) && (
               <div className="post-menu">
                 <button
                   className="btn btn-sm dropdown-toggle"
                   type="button"
-                  style={{
-                    border: '1px solid white',
-                    color: 'white',
-                    backgroundColor: '#6C757D',
-                    borderRadius: '10px',
-                    padding: '4px 8px',
-                    fontSize: '1.3rem',
-                    lineHeight: '1'
-                  }}
                   onClick={() =>
                     setActiveDropdown(prev => (prev === post.id ? null : post.id))
                   }
-                >
-                </button>
+                ></button>
 
-                {activeDropdown === post.id ? (
-                  <div
-                    className="dropdown-menu show"
-                    style={{ position: 'absolute', top: '38px', left: '0' }}
-                  >
+                {activeDropdown === post.id && (
+                  <div className="dropdown-menu show">
                     <button
                       className="dropdown-item"
                       onClick={() => {
@@ -180,20 +164,21 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
                       Delete
                     </button>
                   </div>
-                ) : null}
+                )}
               </div>
-            ) : null}
+            )}
           </div>
 
           <div className="card-body">
+            {/* Edit form or post content */}
             {editingPostId === post.id ? (
               <PostForm
                 editingPost={post}
                 onSuccess={() => {
                   setEditingPost(null);
                   setShowForm(false);
-                  setEditingPostId(null); // ✅ needed to exit edit mode
-                  fetchPosts();       
+                  setEditingPostId(null);
+                  fetchPosts();
                 }}
                 onCancel={() => {
                   setEditingPost(null);
@@ -201,7 +186,6 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
                   setEditingPostId(null);
                 }}
               />
-
             ) : (
               <div className="post-content">
                 <h5 className="card-title">{post.title}</h5>
@@ -209,6 +193,7 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
               </div>
             )}
 
+            {/* Like and comment actions */}
             <div className="post-actions">
               <div className="like-comment-row">
                 <button
@@ -232,6 +217,7 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
             </div>
           </div>
 
+          {/* Comment section for each post */}
           <CommentSection
             postId={post.id}
             showInput={activeCommentInput === post.id}
@@ -239,6 +225,7 @@ function PostList({ setEditingPost, setShowForm, refreshPostsTrigger}) {
         </div>
       ))}
 
+      {/* Full image preview modal */}
       {previewImage && (
         <div className="image-modal" onClick={() => setPreviewImage(null)}>
           <img src={previewImage} alt="Full view" />

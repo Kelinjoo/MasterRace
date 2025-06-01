@@ -4,17 +4,21 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/ProfilePage.css';
 
 function ProfilePage() {
-  const { auth, setAuth } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const { auth, setAuth } = useAuth(); 
+  const [posts, setPosts] = useState([]); 
   const [error, setError] = useState('');
+
+  // Fields for profile editing
   const [editField, setEditField] = useState(null);
   const [newValue, setNewValue] = useState('');
 
+  // Fields for editing a post
   const [editingPostId, setEditingPostId] = useState(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedImage, setEditedImage] = useState('');
 
+  // Fetch all posts and filter by current user's ID
   const fetchUserPosts = async () => {
     try {
       const res = await axios.get('/posts');
@@ -25,11 +29,13 @@ function ProfilePage() {
     }
   };
 
+  // Fetch user profile info for display/edit
   const fetchUserInfo = async () => {
     try {
       const res = await axios.get('/users/me', {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
+      // Update only the user data fields, not token
       setAuth(prev => ({
         ...prev,
         username: res.data.username,
@@ -41,6 +47,7 @@ function ProfilePage() {
     }
   };
 
+  // Delete a user's post
   const handleDelete = async (postId) => {
     if (!window.confirm('Delete this post?')) return;
     try {
@@ -53,6 +60,7 @@ function ProfilePage() {
     }
   };
 
+  // Start editing post
   const handleEdit = (postId) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
@@ -62,6 +70,7 @@ function ProfilePage() {
     setEditedImage(post.image_url || '');
   };
 
+  // Submit post update
   const handleUpdatePost = async () => {
     try {
       await axios.put(`/posts/${editingPostId}`, {
@@ -72,17 +81,19 @@ function ProfilePage() {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       setEditingPostId(null);
-      fetchUserPosts();
+      fetchUserPosts(); // refresh
     } catch {
       alert('Failed to update post.');
     }
   };
 
+  // Start profile edit
   const handleProfileEdit = (field) => {
     setEditField(field);
     setNewValue('');
   };
 
+  // Save profile field changes
   const handleSaveEdit = async () => {
     let url = '';
     let payload = {};
@@ -113,7 +124,7 @@ function ProfilePage() {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
       setEditField(null);
-      fetchUserInfo(); // refresh profile info
+      fetchUserInfo(); // Refresh updated info
     } catch {
       alert('Update failed');
     }
@@ -126,6 +137,7 @@ function ProfilePage() {
 
   return (
     <div className="profile-container container-fluid">
+      {/* Profile Header Section */}
       <div className="profile-header">
         <div className="profile-pic-placeholder">
           {auth.profile_picture ? (
@@ -140,6 +152,7 @@ function ProfilePage() {
           {auth.bio && <p className="profile-bio">{auth.bio}</p>}
           {auth.isAdmin === true && <span className="admin-badge">Admin</span>}
 
+          {/* Profile Field Edit Buttons */}
           <div className="edit-buttons">
             <button onClick={() => handleProfileEdit("profilePic")} className="btn btn-outline-secondary btn-sm">Edit Profile Pic</button>
             <button onClick={() => handleProfileEdit("username")} className="btn btn-outline-secondary btn-sm">Edit Username</button>
@@ -147,6 +160,7 @@ function ProfilePage() {
             <button onClick={() => handleProfileEdit("bio")} className="btn btn-outline-secondary btn-sm">Edit Bio</button>
           </div>
 
+          {/* Input field to update selected profile field */}
           {editField && (
             <div className="mt-3">
               <input
@@ -165,6 +179,7 @@ function ProfilePage() {
 
       <hr />
 
+      {/* User's Posts Section */}
       <div className="user-posts">
         <h3>Your Posts</h3>
         {error && <div className="alert alert-danger">{error}</div>}
@@ -238,4 +253,3 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
-

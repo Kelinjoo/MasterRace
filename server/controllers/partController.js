@@ -25,6 +25,8 @@ const getPartsByType = async (req, res) => {
   }
 };
 
+
+// Add parts
 const addPart = async (req, res) => {
   const { name, type, specs, price } = req.body;
   try {

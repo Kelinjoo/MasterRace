@@ -1,18 +1,19 @@
-// components/BuildForm.jsx
+// Form component for creating a new PC build
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 function BuildForm({ onBuildCreated }) {
-  const { auth } = useAuth();
-  const [name, setName] = useState('');
-  const [partsByType, setPartsByType] = useState({});
-  const [selectedParts, setSelectedParts] = useState({});
-  const [message, setMessage] = useState('');
-  const [compatibilityStatus, setCompatibilityStatus] = useState(null);
+  const { auth } = useAuth(); // Access auth context
+  const [name, setName] = useState(''); // Build name
+  const [partsByType, setPartsByType] = useState({}); // Available parts grouped by type
+  const [selectedParts, setSelectedParts] = useState({}); // Selected part IDs
+  const [message, setMessage] = useState(''); // Status message
+  const [compatibilityStatus, setCompatibilityStatus] = useState(null); // Result of compatibility check
 
-  const partTypes = ['CPU', 'GPU', 'RAM', 'Motherboard', 'Storage', 'PSU', 'Case'];
+  const partTypes = ['CPU', 'GPU', 'RAM', 'Motherboard', 'Storage', 'PSU', 'Case']; // All required part types
 
+  // Fetch all parts by type on mount
   useEffect(() => {
     const fetchParts = async () => {
       try {
@@ -30,11 +31,13 @@ function BuildForm({ onBuildCreated }) {
     fetchParts();
   }, []);
 
+  // Handle selecting a part from dropdown
   const handlePartSelect = (type, partId) => {
     setSelectedParts(prev => ({ ...prev, [type]: Number(partId) }));
     setMessage('');
   };
 
+  // Trigger manual compatibility check
   const checkCompatibility = async () => {
     const partIds = Object.values(selectedParts);
     if (partIds.length < 2) {
@@ -50,26 +53,26 @@ function BuildForm({ onBuildCreated }) {
     }
   };
 
+  // Submit the form to create a build
   const handleSubmit = async (e) => {
     e.preventDefault();
     const partIds = Object.values(selectedParts);
-  
+
     if (!name || partIds.length === 0) {
       return setMessage('❌ Build name and parts are required.');
     }
-  
+
     try {
       const res = await axios.post('/parts/check-compatibility', { partIds });
       if (!res.data.compatible) {
         return setMessage('❌ Build contains incompatible parts.');
       }
-  
+
       await axios.post('/builds', { name, partIds }, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`
-        }
+        headers: { Authorization: `Bearer ${auth.token}` }
       });
-  
+
+      // Reset form state on success
       setName('');
       setSelectedParts({});
       setCompatibilityStatus(null);
@@ -79,12 +82,12 @@ function BuildForm({ onBuildCreated }) {
       setMessage('❌ Failed to create build.');
     }
   };
-  
 
   return (
     <form onSubmit={handleSubmit} className="mb-4">
       <h4>Create a PC Build</h4>
 
+      {/* Input for build name */}
       <div className="mb-3">
         <label className="form-label">Build Name</label>
         <input
@@ -99,6 +102,7 @@ function BuildForm({ onBuildCreated }) {
         />
       </div>
 
+      {/* Dropdowns for selecting each part */}
       {partTypes.map(type => (
         <div className="mb-3" key={type}>
           <label className="form-label">{type}</label>
@@ -117,6 +121,7 @@ function BuildForm({ onBuildCreated }) {
         </div>
       ))}
 
+      {/* Display compatibility result */}
       {compatibilityStatus && (
         <div className={`alert ${compatibilityStatus.compatible ? 'alert-success' : 'alert-danger'}`}>
           {compatibilityStatus.compatible
@@ -125,8 +130,10 @@ function BuildForm({ onBuildCreated }) {
         </div>
       )}
 
+      {/* Display form status message */}
       {message && <div className="text-muted mb-2">{message}</div>}
 
+      {/* Action buttons */}
       <div className="d-flex gap-2">
         <button type="button" className="btn btn-outline-info" onClick={checkCompatibility}>
           Check Compatibility

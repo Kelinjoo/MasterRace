@@ -1,13 +1,14 @@
 const bcrypt = require('bcrypt');
+
 const {
-  getUserById, 
+  getUserById,
   updateUsername,
   updateBio,
   updateProfilePic,
   updatePassword
 } = require('../models/userModel');
 
-
+// Get user info for the currently authenticated user
 const getUserInfo = async (req, res) => {
   try {
     const user = await getUserById(req.user.id);
@@ -17,6 +18,7 @@ const getUserInfo = async (req, res) => {
   }
 };
 
+// Update the authenticated user's username
 const changeUsername = async (req, res) => {
   const { newUsername } = req.body;
   try {
@@ -27,6 +29,7 @@ const changeUsername = async (req, res) => {
   }
 };
 
+// Update the user's bio
 const changeBio = async (req, res) => {
   const { newBio } = req.body;
   try {
@@ -37,6 +40,7 @@ const changeBio = async (req, res) => {
   }
 };
 
+// Update the user's profile picture
 const changeProfilePic = async (req, res) => {
   const { profilePicUrl } = req.body;
   try {
@@ -47,6 +51,7 @@ const changeProfilePic = async (req, res) => {
   }
 };
 
+// Update the user's password
 const changePassword = async (req, res) => {
   const { newPassword } = req.body;
   try {
@@ -57,6 +62,7 @@ const changePassword = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 module.exports = {
   getUserInfo,

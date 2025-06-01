@@ -3,7 +3,7 @@ import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 const PartForm = ({ onPartAdded }) => {
-  const { auth } = useAuth();
+  const { auth } = useAuth(); // Auth context to get token
   const [form, setForm] = useState({
     name: '',
     type: '',
@@ -12,14 +12,17 @@ const PartForm = ({ onPartAdded }) => {
   });
   const [message, setMessage] = useState('');
 
+  // Handle form input changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Handle part submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, type, specs, price } = form;
 
+    // Basic validation
     if (!name || !type || !price) {
       return setMessage('Please fill in required fields.');
     }
@@ -28,9 +31,11 @@ const PartForm = ({ onPartAdded }) => {
       await axios.post('/parts', form, {
         headers: { Authorization: `Bearer ${auth.token}` }
       });
+
+      // Reset form on success
       setMessage('✅ Part added successfully!');
       setForm({ name: '', type: '', specs: '', price: '' });
-      onPartAdded?.(); // optional callback
+      onPartAdded?.(); // Optional callback to refresh list
     } catch {
       setMessage('❌ Failed to add part.');
     }
@@ -40,7 +45,9 @@ const PartForm = ({ onPartAdded }) => {
     <div className="mb-4">
       <h5>Add New Part</h5>
       {message && <div className="text-muted mb-2">{message}</div>}
+
       <form onSubmit={handleSubmit} className="d-flex flex-column gap-2">
+        {/* Name input */}
         <input
           name="name"
           value={form.name}
@@ -48,6 +55,8 @@ const PartForm = ({ onPartAdded }) => {
           placeholder="Part name"
           className="form-control"
         />
+
+        {/* Part type dropdown */}
         <select
           name="type"
           value={form.type}
@@ -63,6 +72,8 @@ const PartForm = ({ onPartAdded }) => {
           <option>PSU</option>
           <option>Case</option>
         </select>
+
+        {/* Optional specs */}
         <input
           name="specs"
           value={form.specs}
@@ -70,6 +81,8 @@ const PartForm = ({ onPartAdded }) => {
           placeholder="Specs (optional)"
           className="form-control"
         />
+
+        {/* Price input */}
         <input
           name="price"
           value={form.price}
@@ -79,6 +92,8 @@ const PartForm = ({ onPartAdded }) => {
           type="number"
           step="0.01"
         />
+
+        {/* Submit button */}
         <button className="btn btn-success">Add Part</button>
       </form>
     </div>

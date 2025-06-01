@@ -10,8 +10,9 @@ import '../styles/BuildPage.css';
 function BuildPage() {
   const { auth } = useAuth();
   const [builds, setBuilds] = useState([]);
-  const [mode, setMode] = useState('create'); // 'create', 'view', 'admin'
+  const [mode, setMode] = useState('create'); // Can switch between 'create', 'view', or 'admin'
 
+  // Fetch user's builds from the server
   const fetchBuilds = async () => {
     try {
       const res = await axios.get('/builds', {
@@ -23,6 +24,7 @@ function BuildPage() {
     }
   };
 
+  // Delete a selected build
   const handleDeleteBuild = async (buildId) => {
     if (!window.confirm('Are you sure you want to delete this build?')) return;
 
@@ -36,6 +38,7 @@ function BuildPage() {
     }
   };
 
+  // Fetch builds after login
   useEffect(() => {
     if (auth.token) {
       fetchBuilds();
@@ -47,6 +50,7 @@ function BuildPage() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Build My PC</h2>
 
+        {/* Mode selection dropdown */}
         <select
           className="form-select mode-selector"
           value={mode}
@@ -59,6 +63,7 @@ function BuildPage() {
         </select>
       </div>
 
+      {/* Show content based on selected mode */}
       {mode === 'create' && <BuildForm onBuildCreated={fetchBuilds} />}
       {mode === 'view' && <BuildList builds={builds} onDelete={handleDeleteBuild} />}
       {mode === 'admin' && auth.isAdmin && (
