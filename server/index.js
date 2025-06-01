@@ -39,6 +39,8 @@ app.get('/api/test', (req, res) => {
 });
 
 //test db
+// Temp change to trigger fresh Railway deploy
+
 app.get('/api/test-db', async (req, res) => {
   try {
     const connection = await db.getConnection();
