@@ -17,7 +17,12 @@ const app = express();
 const authRoutes = require('./routes/authRoutes');
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',   // You can restrict to Netlify later if needed
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Routes
