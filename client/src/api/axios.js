@@ -2,13 +2,11 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: import.meta.env.DEV
-    ? 'http://localhost:4174/api' // local dev
-    : '/api', // production on Netlify
+  baseURL: '/api',
+  // baseURL: 'http://localhost:4174/api',  Base URL for local development
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export default instance;
-
